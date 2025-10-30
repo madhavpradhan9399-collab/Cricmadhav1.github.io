@@ -1,0 +1,5 @@
+{
+  "name": "CricketPro Live Overlay System",
+  "description": "A dynamic cricket scoreboard web app with real-time scoring, team/tournament management, and overlay integration for live streaming. Manage tournaments, teams, and live scoring, and generate a real-time browser source overlay for Prism Studio, OBS, and StreamYard.",
+  "requestFramePermissions": []
+}
