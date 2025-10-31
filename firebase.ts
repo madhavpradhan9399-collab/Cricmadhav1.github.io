@@ -1,17 +1,20 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Your web app's Firebase configuration.
+// IMPORTANT: Your Firebase API key is public on the web. To protect your data,
+// you MUST set up Firestore Security Rules in the Firebase console.
+// Go to Firestore Database > Rules and set up rules to only allow authorized access.
 const firebaseConfig = {
-  apiKey: "AIzaSyDlotfi9rPQisxl9JSvkv5G_VEiuBkX-CM",
-  authDomain: "cricket-score-board-863fc.firebaseapp.com",
-  projectId: "cricket-score-board-863fc",
-  storageBucket: "cricket-score-board-863fc.firebasestorage.app",
-  messagingSenderId: "435873239433",
-  appId: "1:435873239433:web:7b839fbc6252f09570d158",
-  measurementId: "G-578DCQPMWB"
+  apiKey: "AIzaSyA31AWf6DTtcLFXO_Z8GcQozzr5i5ereIc",
+  authDomain: "madhcric-scoreb.firebaseapp.com",
+  projectId: "madhcric-scoreb",
+  storageBucket: "madhcric-scoreb.firebasestorage.app",
+  messagingSenderId: "15203621917",
+  appId: "1:15203621917:web:2686eeb932baef06397af4",
+  measurementId: "G-TR4P7229DW"
 };
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
