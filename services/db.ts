@@ -1,7 +1,7 @@
 
 import { getFirebase } from '../firebase';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { Tournament, Team, Match } from '../types';
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
 
 export interface AppData {
     tournaments: Tournament[];
@@ -25,14 +25,13 @@ const firestoreService = {
     }
 
     const docRef = doc(db, COLLECTION_NAME, loginId);
+    
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         callback(docSnap.data() as AppData);
       } else {
         console.log(`No data found for Scorebook ID ${loginId}. It may be new or incorrect.`);
         const initialState: AppData = { tournaments: [], teams: [], matches: [] };
-        // We don't auto-create here to avoid creating documents for typos.
-        // Creation is handled explicitly by the AppContext.
         callback(initialState);
       }
     }, (error) => {
@@ -48,7 +47,6 @@ const firestoreService = {
     const { db, isConfigured } = getFirebase();
     if (!isConfigured || !db) {
       console.warn("Firestore not configured. Data was not saved.");
-      // In a real app, you might want to queue this or save to localStorage as a backup.
       return; 
     }
     try {

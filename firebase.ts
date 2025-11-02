@@ -1,7 +1,9 @@
 
 
-import { initializeApp, getApps, getApp, FirebaseApp } from "firebase";
-import { getFirestore, Firestore } from "firebase/firestore";
+// FIX: Switched from named imports to a namespace import to resolve module resolution errors.
+// This is a common workaround for issues with build tooling or conflicting dependencies.
+import * as firebase from 'firebase/app';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration.
 const firebaseConfig = {
@@ -15,7 +17,7 @@ const firebaseConfig = {
 };
 
 // Singleton pattern to ensure Firebase is only initialized once.
-let firebaseServices: { app: FirebaseApp; db: Firestore; isConfigured: true } | { app: null; db: null; isConfigured: false } | null = null;
+let firebaseServices: { app: firebase.FirebaseApp; db: Firestore; isConfigured: true } | { app: null; db: null; isConfigured: false } | null = null;
 
 /**
  * Initializes Firebase services on the first call and returns the memoized instance on subsequent calls.
@@ -31,7 +33,7 @@ export function getFirebase() {
 
   if (isProperlyConfigured) {
     try {
-      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+      const app = firebase.getApps().length === 0 ? firebase.initializeApp(firebaseConfig) : firebase.getApp();
       const db = getFirestore(app);
       firebaseServices = { app, db, isConfigured: true };
     } catch (error) {
