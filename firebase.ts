@@ -1,7 +1,7 @@
 
 
-// FIX: Switched from named imports to a namespace import to resolve module resolution errors.
-// This is a common workaround for issues with build tooling or conflicting dependencies.
+// Use standard named imports for the modular v9+ SDK, which is the most robust method.
+// Fix: Use a namespace import for 'firebase/app' to address module resolution issues.
 import * as firebase from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 
@@ -17,6 +17,7 @@ const firebaseConfig = {
 };
 
 // Singleton pattern to ensure Firebase is only initialized once.
+// Fix: Use the FirebaseApp type from the imported namespace.
 let firebaseServices: { app: firebase.FirebaseApp; db: Firestore; isConfigured: true } | { app: null; db: null; isConfigured: false } | null = null;
 
 /**
@@ -33,6 +34,8 @@ export function getFirebase() {
 
   if (isProperlyConfigured) {
     try {
+      // Use direct function calls with named imports, the standard for v9+.
+      // Fix: Use functions from the imported namespace.
       const app = firebase.getApps().length === 0 ? firebase.initializeApp(firebaseConfig) : firebase.getApp();
       const db = getFirestore(app);
       firebaseServices = { app, db, isConfigured: true };
