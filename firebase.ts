@@ -1,4 +1,7 @@
-import { initializeApp, FirebaseApp } from "firebase/app";
+
+// FIX: Separated value and type imports to resolve module resolution errors.
+import { initializeApp } from "firebase/app";
+import type { FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration.

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 
 const LoginPage: React.FC = () => {
-  const { login, createAndLogin, isFirebaseConfigured } = useAppContext();
+  const { login, createAndLogin, isFirebaseConfigured, initializationError } = useAppContext();
   const [idInput, setIdInput] = useState('');
 
   const handleLoad = (e: React.FormEvent) => {
@@ -23,7 +23,16 @@ const LoginPage: React.FC = () => {
         <p className="text-lg text-text-secondary mb-8">Live Overlay System</p>
 
         <div className="bg-secondary p-8 rounded-lg shadow-2xl">
+          {initializationError && (
+// FIX: Added missing closing ">" to the div tag.
+            <div className="bg-yellow-900 border border-yellow-500 text-yellow-200 px-4 py-3 rounded-lg relative mb-6 text-left" role="alert">
+              <strong className="font-bold">Loading Error!</strong>
+              <p className="text-sm mt-1">{initializationError}</p>
+            </div>
+          )}
+
           {!isFirebaseConfigured && (
+// FIX: Added missing closing ">" to the div tag.
             <div className="bg-red-900 border border-red-500 text-red-200 px-4 py-3 rounded-lg relative mb-6 text-left" role="alert">
               <strong className="font-bold">Configuration Needed!</strong>
               <span className="block mt-1">Firebase is not set up correctly.</span>

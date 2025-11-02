@@ -11,9 +11,10 @@ export interface AppData {
 const COLLECTION_NAME = 'scorebooks';
 
 type Unsubscribe = () => void;
+type AppDataCallback = (data: AppData, error?: string) => void;
 
 const firestoreService = {
-  listenToAppData: (loginId: string, callback: (data: AppData) => void): Unsubscribe => {
+  listenToAppData: (loginId: string, callback: AppDataCallback): Unsubscribe => {
     if (!isFirebaseConfigured || !db) {
       const initialState: AppData = { tournaments: [], teams: [], matches: [] };
       callback(initialState);
@@ -34,7 +35,7 @@ const firestoreService = {
     }, (error) => {
       console.error("Error listening to Firestore document:", error);
       const initialState: AppData = { tournaments: [], teams: [], matches: [] };
-      callback(initialState);
+      callback(initialState, error.message);
     });
 
     return unsubscribe;
@@ -43,7 +44,9 @@ const firestoreService = {
   saveAppData: async (loginId: string, data: AppData): Promise<void> => {
     if (!isFirebaseConfigured || !db) {
       console.warn("Firestore not configured. Data was not saved.");
-      return; // Just return without saving to prevent errors
+      // In a real app, you might want to queue this or save to localStorage as a backup.
+      // For now, we just prevent the error.
+      return; 
     }
     try {
       const docRef = doc(db, COLLECTION_NAME, loginId);

@@ -7,6 +7,7 @@ interface AppContextType {
   loginId: string | null;
   isLoading: boolean;
   isFirebaseConfigured: boolean;
+  initializationError: string | null;
   login: (id: string) => void;
   logout: () => void;
   createAndLogin: () => Promise<void>;
@@ -39,6 +40,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [loginId, setLoginId] = useState<string | null>(null);
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [initializationError, setInitializationError] = useState<string | null>(null);
+
 
   useEffect(() => {
     const storedId = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -52,17 +55,47 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!loginId || isInitializing) {
       return;
     }
-    
-    // This effect handles data loading for a logged-in user on private/admin routes.
+
     setAppData(null); // Clear any stale data
-    const unsubscribe = db.listenToAppData(loginId, (data) => {
-      setAppData(data);
-    });
-    return () => unsubscribe();
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    try {
+        const unsubscribe = db.listenToAppData(loginId, (data, error) => {
+            if (timeoutId) clearTimeout(timeoutId);
+
+            if (error) {
+                setInitializationError(`Error loading scorebook: ${error}. Check your Firestore security rules.`);
+                logout(); // Log out to show the login page with the error
+            } else {
+                setAppData(data);
+                setInitializationError(null);
+            }
+        });
+        
+        // Set a timeout to prevent infinite loading screen
+        timeoutId = setTimeout(() => {
+            unsubscribe();
+            setInitializationError(
+                "Loading timed out. This could be due to incorrect Firestore security rules or a network issue. Please check your setup and try again."
+            );
+            logout(); // Log out to show the login page with the error
+        }, 10000); // 10-second timeout
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            unsubscribe();
+        };
+
+    } catch (e) {
+        setInitializationError("A critical error occurred during initialization. Please check the console.");
+        logout();
+    }
+
   }, [loginId, isInitializing]);
 
   const login = useCallback((id: string) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, id);
+    setInitializationError(null); // Clear previous errors on new login attempt
     setLoginId(id);
   }, []);
 
@@ -78,10 +111,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [loginId]);
 
   const createAndLogin = useCallback(async () => {
-    const newId = `sb_${Date.now()}`;
-    const initialState: AppData = { tournaments: [], teams: [], matches: [] };
-    await db.saveAppData(newId, initialState);
-    login(newId);
+    try {
+        const newId = `sb_${Date.now()}`;
+        const initialState: AppData = { tournaments: [], teams: [], matches: [] };
+        await db.saveAppData(newId, initialState);
+        login(newId);
+    } catch (error) {
+        console.error("Failed to create new scorebook:", error);
+        alert(
+            "Could not create a new scorebook.\n\n" +
+            "This is most likely due to your Firestore Security Rules denying write access. " +
+            "Please ensure your rules are configured correctly in the Firebase console."
+        );
+    }
   }, [login]);
 
   const createTournament = useCallback(async (tournamentData: Omit<Tournament, 'id' | 'teams' | 'matches' | 'createdAt'>) => {
@@ -434,11 +476,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   }, [modifyMatch]);
 
-  const isLoading = isInitializing || (!!loginId && appData === null);
+  const isLoading = isInitializing || (!!loginId && appData === null && !initializationError);
   const tournaments = appData?.tournaments ?? [];
   const teams = appData?.teams ?? [];
   const matches = appData?.matches ?? [];
-  const value = { loginId, isLoading, isFirebaseConfigured, login, logout, createAndLogin, tournaments, teams, matches, createTournament, deleteTournament, getTournament, createTeam, updateTeam, getTeam, addPlayerToTeam, createMatch, getMatch, updateScore, undoLastBall, updateMatchPlayers, startMatch, endMatch, changeInnings, updatePlayerStats };
+  const value = { loginId, isLoading, isFirebaseConfigured, initializationError, login, logout, createAndLogin, tournaments, teams, matches, createTournament, deleteTournament, getTournament, createTeam, updateTeam, getTeam, addPlayerToTeam, createMatch, getMatch, updateScore, undoLastBall, updateMatchPlayers, startMatch, endMatch, changeInnings, updatePlayerStats };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
