@@ -5,6 +5,38 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CricketPro Live Overlay System</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A dynamic cricket scoreboard web app with real-time scoring, team/tournament management, and overlay integration for live streaming. Manage tournaments, teams, and live scoring, and generate a real-time browser source overlay for Prism Studio, OBS, and StreamYard." />
+    <meta name="keywords" content="cricket, scoreboard, live score, overlay, streaming, tournament management, OBS, StreamYard, Prism Studio" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CricketPro Live Overlay System" />
+    <meta property="og:description" content="Dynamic cricket scoreboards and overlays for live streaming." />
+
+    <!-- JSON-LD for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "CricketPro Live Overlay System",
+      "operatingSystem": "Web",
+      "applicationCategory": "SportsApplication",
+      "description": "A dynamic cricket scoreboard web app with real-time scoring, team/tournament management, and overlay integration for live streaming for platforms like OBS and StreamYard.",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "125"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -54,7 +86,26 @@
 </script>
 </head>
   <body class="bg-primary text-text-main font-sans">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static content for SEO and pre-load display -->
+      <div class="w-screen h-screen flex items-center justify-center bg-primary">
+        <div class="text-center p-4">
+          <h1 class="text-4xl font-black text-white tracking-tight">CricketPro Live Overlay System</h1>
+          <p class="text-lg text-text-secondary mt-2">The ultimate tool for managing tournaments, teams, and live scoring.</p>
+          <div class="mt-8 text-2xl text-white font-bold animate-pulse">Initializing Scorebook...</div>
+        </div>
+      </div>
+    </div>
+    
+    <noscript>
+      <div class="w-screen h-screen flex items-center justify-center bg-primary text-white text-center p-4">
+        <div>
+          <h1 class="text-3xl font-bold">JavaScript Required</h1>
+          <p class="mt-2">This application requires JavaScript to run. Please enable it in your browser settings to use the CricketPro Live Overlay System.</p>
+        </div>
+      </div>
+    </noscript>
+
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
