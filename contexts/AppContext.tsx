@@ -18,7 +18,6 @@ interface AppContextType {
   updateTeam: (teamId: string, teamData: Partial<Omit<Team, 'id' | 'players'>>) => Promise<void>;
   getTeam: (id: string) => Team | undefined;
   addPlayerToTeam: (teamId: string, player: Omit<Player, 'id'>) => Promise<void>;
-  // FIX: Removed extraneous `>` at the end of the decision type definition.
   createMatch: (tournamentId: string, teamAId: string, teamBId: string, tossWinnerId: string, decision: 'bat' | 'bowl') => Promise<Match | undefined>;
   getMatch: (id: string) => Match | undefined;
   updateScore: (matchId: string, event: BallEvent) => Promise<void>;
@@ -155,7 +154,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     await saveData(newAppData);
   }, [appData, saveData]);
 
-  // FIX: Removed extraneous `>` at the end of the decision type definition.
   const createMatch = useCallback(async (tournamentId: string, teamAId: string, teamBId: string, tossWinnerId: string, decision: 'bat' | 'bowl') => {
     if (!appData) return undefined;
     
@@ -412,26 +410,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const wasLegalBall = !['WD', 'NB'].includes(lastBall.event);
       if (wasLegalBall) {
         // Correctly handle decrementing across over boundaries.
-        innings.balls--;
-        if (innings.balls < 0) {
+        if (innings.balls === 0) {
           innings.overs--;
-          innings.balls = 5; // A full over has 6 balls, indexed 0-5.
+          innings.balls = 5;
+        } else {
+          innings.balls--;
         }
       }
 
       // Rebuild currentOver from the timeline to ensure it's always consistent.
-      // If we are at the end of an over (e.g., overs: 2, balls: 0), we want to display
-      // the over that was just completed (over index 1).
-      const overNumberToDisplay = innings.balls === 0 ? innings.overs - 1 : innings.overs;
-
-      if (overNumberToDisplay >= 0) {
-        match.currentOver = innings.timeline.filter(ball => {
-            const isLegal = !['WD', 'NB'].includes(ball.event);
-            return ball.overNumber === overNumberToDisplay && isLegal;
-        });
-      } else {
-        match.currentOver = [];
-      }
+      const currentOverNumber = innings.overs;
+      match.currentOver = innings.timeline.filter(ball => {
+          const isLegal = !['WD', 'NB'].includes(ball.event);
+          return ball.overNumber === currentOverNumber && isLegal;
+      });
       
       match.strikerId = lastBall.batsmanId;
       // Note: Reverting non-striker is complex, so we'll leave it as is for simplicity.

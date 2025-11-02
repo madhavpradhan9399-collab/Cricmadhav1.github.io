@@ -5,14 +5,17 @@ import { getFirestore } from "firebase/firestore";
 // IMPORTANT: Your Firebase API key is public on the web. To protect your data,
 // you MUST set up Firestore Security Rules in the Firebase console.
 // Go to Firestore Database > Rules and set up rules to only allow authorized access.
+// ---
+// FIXME: Replace with your actual Firebase project configuration.
+// The current configuration uses placeholder values and will not work.
 const firebaseConfig = {
-  apiKey: "AIzaSyA31AWf6DTtcLFXO_Z8GcQozzr5i5ereIc",
-  authDomain: "madhcric-scoreb.firebaseapp.com",
-  projectId: "madhcric-scoreb",
-  storageBucket: "madhcric-scoreb.firebasestorage.app",
-  messagingSenderId: "15203621917",
-  appId: "1:15203621917:web:2686eeb932baef06397af4",
-  measurementId: "G-TR4P7229DW"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
 };
 
 
