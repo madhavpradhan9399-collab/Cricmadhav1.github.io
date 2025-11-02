@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp, FirebaseApp } from "firebase/app";
+import { getFirestore, Firestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration.
 // IMPORTANT: Your Firebase API key is public on the web. To protect your data,
@@ -8,22 +8,36 @@ import { getFirestore } from "firebase/firestore";
 // ---
 // FIXME: Replace with your actual Firebase project configuration.
 // The current configuration uses placeholder values and will not work.
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyA31AWf6DTtcLFXO_Z8GcQozzr5i5ereIc",
+  authDomain: "madhcric-scoreb.firebaseapp.com",
+  databaseURL: "https://madhcric-scoreb-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "madhcric-scoreb",
+  storageBucket: "madhcric-scoreb.firebasestorage.app",
+  messagingSenderId: "15203621917",
+  appId: "1:15203621917:web:2686eeb932baef06397af4",
+  measurementId: "G-TR4P7229DW"
 };
 
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
+let isFirebaseConfigured = false;
 
-// Initialize Cloud Firestore and get a reference to the service
-const db = getFirestore(app);
+// Check if the config has been changed from the placeholder values to prevent app crash.
+if (firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.projectId !== "YOUR_PROJECT_ID") {
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    isFirebaseConfigured = true;
+  } catch (error) {
+    console.error("Firebase initialization failed. Please check your config in firebase.ts.", error);
+    // App remains unconfigured if initialization fails.
+  }
+} else {
+  console.warn("Firebase is not configured. The app will run in a temporary, non-persistent mode. Please update firebase.ts.");
+}
 
 // Export db for use in other parts of the app
-export { db };
+export { db, isFirebaseConfigured };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 
 const LoginPage: React.FC = () => {
-  const { login, createAndLogin } = useAppContext();
+  const { login, createAndLogin, isFirebaseConfigured } = useAppContext();
   const [idInput, setIdInput] = useState('');
 
   const handleLoad = (e: React.FormEvent) => {
@@ -23,6 +23,14 @@ const LoginPage: React.FC = () => {
         <p className="text-lg text-text-secondary mb-8">Live Overlay System</p>
 
         <div className="bg-secondary p-8 rounded-lg shadow-2xl">
+          {!isFirebaseConfigured && (
+            <div className="bg-red-900 border border-red-500 text-red-200 px-4 py-3 rounded-lg relative mb-6 text-left" role="alert">
+              <strong className="font-bold">Configuration Needed!</strong>
+              <span className="block mt-1">Firebase is not set up correctly.</span>
+              <p className="text-sm mt-1">Your data will not be saved. Please update the <strong>firebase.ts</strong> file with your project credentials to enable data persistence.</p>
+            </div>
+          )}
+
           <h2 className="text-2xl font-bold text-white mb-6">Welcome!</h2>
           
           <button

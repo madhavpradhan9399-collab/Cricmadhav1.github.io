@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Tournament, Team, Player, Match, BallEvent, Innings, Ball, BatsmanStats, BowlerStats } from '../types';
 import db, { AppData } from '../services/db';
+import { isFirebaseConfigured } from '../firebase';
 
 interface AppContextType {
   loginId: string | null;
   isLoading: boolean;
+  isFirebaseConfigured: boolean;
   login: (id: string) => void;
   logout: () => void;
   createAndLogin: () => Promise<void>;
@@ -436,7 +438,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const tournaments = appData?.tournaments ?? [];
   const teams = appData?.teams ?? [];
   const matches = appData?.matches ?? [];
-  const value = { loginId, isLoading, login, logout, createAndLogin, tournaments, teams, matches, createTournament, deleteTournament, getTournament, createTeam, updateTeam, getTeam, addPlayerToTeam, createMatch, getMatch, updateScore, undoLastBall, updateMatchPlayers, startMatch, endMatch, changeInnings, updatePlayerStats };
+  const value = { loginId, isLoading, isFirebaseConfigured, login, logout, createAndLogin, tournaments, teams, matches, createTournament, deleteTournament, getTournament, createTeam, updateTeam, getTeam, addPlayerToTeam, createMatch, getMatch, updateScore, undoLastBall, updateMatchPlayers, startMatch, endMatch, changeInnings, updatePlayerStats };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

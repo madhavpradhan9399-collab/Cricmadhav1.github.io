@@ -1,4 +1,4 @@
-import { db } from '../firebase';
+import { db, isFirebaseConfigured } from '../firebase';
 import { Tournament, Team, Match } from '../types';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 
@@ -14,6 +14,12 @@ type Unsubscribe = () => void;
 
 const firestoreService = {
   listenToAppData: (loginId: string, callback: (data: AppData) => void): Unsubscribe => {
+    if (!isFirebaseConfigured || !db) {
+      const initialState: AppData = { tournaments: [], teams: [], matches: [] };
+      callback(initialState);
+      return () => {}; // Return a no-op unsubscribe function
+    }
+
     const docRef = doc(db, COLLECTION_NAME, loginId);
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -35,6 +41,10 @@ const firestoreService = {
   },
 
   saveAppData: async (loginId: string, data: AppData): Promise<void> => {
+    if (!isFirebaseConfigured || !db) {
+      console.warn("Firestore not configured. Data was not saved.");
+      return; // Just return without saving to prevent errors
+    }
     try {
       const docRef = doc(db, COLLECTION_NAME, loginId);
       await setDoc(docRef, data);
