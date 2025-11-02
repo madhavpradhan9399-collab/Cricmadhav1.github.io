@@ -57,7 +57,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     setAppData(null); // Clear any stale data
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     try {
         const unsubscribe = db.listenToAppData(loginId, (data, error) => {

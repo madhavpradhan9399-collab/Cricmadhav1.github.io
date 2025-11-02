@@ -1,7 +1,5 @@
-
-// FIX: Separated value and type imports to resolve module resolution errors.
-import { initializeApp } from "firebase/app";
-import type { FirebaseApp } from "firebase/app";
+// FIX: Changed to a namespace import to resolve module resolution errors for 'firebase/app'.
+import * as firebase from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration.
@@ -24,14 +22,16 @@ const firebaseConfig = {
 };
 
 
-let app: FirebaseApp | null = null;
+// FIX: Use the FirebaseApp type from the 'firebase' namespace.
+let app: firebase.FirebaseApp | null = null;
 let db: Firestore | null = null;
 let isFirebaseConfigured = false;
 
 // Check if the config has been changed from the placeholder values to prevent app crash.
 if (firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.projectId !== "YOUR_PROJECT_ID") {
   try {
-    app = initializeApp(firebaseConfig);
+    // FIX: Call initializeApp from the 'firebase' namespace.
+    app = firebase.initializeApp(firebaseConfig);
     db = getFirestore(app);
     isFirebaseConfigured = true;
   } catch (error) {
