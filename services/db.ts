@@ -1,4 +1,4 @@
-import { db, isFirebaseConfigured } from '../firebase';
+import { getFirebase } from '../firebase';
 import { Tournament, Team, Match } from '../types';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 
@@ -15,7 +15,9 @@ type AppDataCallback = (data: AppData, error?: string) => void;
 
 const firestoreService = {
   listenToAppData: (loginId: string, callback: AppDataCallback): Unsubscribe => {
-    if (!isFirebaseConfigured || !db) {
+    const { db, isConfigured } = getFirebase();
+
+    if (!isConfigured || !db) {
       const initialState: AppData = { tournaments: [], teams: [], matches: [] };
       callback(initialState);
       return () => {}; // Return a no-op unsubscribe function
@@ -42,10 +44,10 @@ const firestoreService = {
   },
 
   saveAppData: async (loginId: string, data: AppData): Promise<void> => {
-    if (!isFirebaseConfigured || !db) {
+    const { db, isConfigured } = getFirebase();
+    if (!isConfigured || !db) {
       console.warn("Firestore not configured. Data was not saved.");
       // In a real app, you might want to queue this or save to localStorage as a backup.
-      // For now, we just prevent the error.
       return; 
     }
     try {

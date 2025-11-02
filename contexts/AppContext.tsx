@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Tournament, Team, Player, Match, BallEvent, Innings, Ball, BatsmanStats, BowlerStats } from '../types';
 import db, { AppData } from '../services/db';
-import { isFirebaseConfigured } from '../firebase';
+import { getFirebase } from '../firebase';
 
 interface AppContextType {
   loginId: string | null;
@@ -41,7 +41,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initializationError, setInitializationError] = useState<string | null>(null);
-
+  const isFirebaseConfigured = getFirebase().isConfigured;
 
   useEffect(() => {
     const storedId = localStorage.getItem(LOCAL_STORAGE_KEY);
