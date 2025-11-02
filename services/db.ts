@@ -1,3 +1,4 @@
+
 import { getFirebase } from '../firebase';
 import { Tournament, Team, Match } from '../types';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";

@@ -1,9 +1,9 @@
-import * as firebase from "firebase/app";
-import * as firestore from "firebase/firestore";
+
+
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase";
+import { getFirestore, Firestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration.
-// IMPORTANT: Your Firebase API key is public on the web. To protect your data,
-// you MUST set up Firestore Security Rules in the Firebase console.
 const firebaseConfig = {
   apiKey: "AIzaSyA31AWf6DTtcLFXO_Z8GcQozzr5i5ereIc",
   authDomain: "madhcric-scoreb.firebaseapp.com",
@@ -15,7 +15,7 @@ const firebaseConfig = {
 };
 
 // Singleton pattern to ensure Firebase is only initialized once.
-let firebaseServices: { db: firestore.Firestore; isConfigured: true } | { db: null; isConfigured: false } | null = null;
+let firebaseServices: { app: FirebaseApp; db: Firestore; isConfigured: true } | { app: null; db: null; isConfigured: false } | null = null;
 
 /**
  * Initializes Firebase services on the first call and returns the memoized instance on subsequent calls.
@@ -31,16 +31,16 @@ export function getFirebase() {
 
   if (isProperlyConfigured) {
     try {
-      const app = firebase.initializeApp(firebaseConfig);
-      const db = firestore.getFirestore(app);
-      firebaseServices = { db, isConfigured: true };
+      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+      const db = getFirestore(app);
+      firebaseServices = { app, db, isConfigured: true };
     } catch (error) {
       console.error("Firebase initialization failed. Please check your config in firebase.ts.", error);
-      firebaseServices = { db: null, isConfigured: false };
+      firebaseServices = { app: null, db: null, isConfigured: false };
     }
   } else {
     console.warn("Firebase is not configured. The app will run in a temporary, non-persistent mode. Please update firebase.ts.");
-    firebaseServices = { db: null, isConfigured: false };
+    firebaseServices = { app: null, db: null, isConfigured: false };
   }
   
   return firebaseServices;
