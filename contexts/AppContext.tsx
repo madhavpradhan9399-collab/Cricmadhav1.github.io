@@ -38,13 +38,16 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// Initialize Firebase services once when the module is loaded.
+const firebaseServices = getFirebase();
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loginId, setLoginId] = useState<string | null>(null);
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [initializationError, setInitializationError] = useState<string | null>(null);
-  const { isConfigured, auth } = getFirebase();
+  const { isConfigured, auth } = firebaseServices;
 
   useEffect(() => {
     if (!auth) {
