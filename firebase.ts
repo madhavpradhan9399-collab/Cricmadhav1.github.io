@@ -1,9 +1,7 @@
 
-
-// Use standard named imports for the modular v9+ SDK, which is the most robust method.
-// Fix: Use a namespace import for 'firebase/app' to address module resolution issues.
-import * as firebase from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, Auth } from 'firebase/auth';
 
 // Your web app's Firebase configuration.
 const firebaseConfig = {
@@ -17,13 +15,12 @@ const firebaseConfig = {
 };
 
 // Singleton pattern to ensure Firebase is only initialized once.
-// Fix: Use the FirebaseApp type from the imported namespace.
-let firebaseServices: { app: firebase.FirebaseApp; db: Firestore; isConfigured: true } | { app: null; db: null; isConfigured: false } | null = null;
+let firebaseServices: { app: FirebaseApp; db: Firestore; auth: Auth; isConfigured: true } | { app: null; db: null; auth: null; isConfigured: false } | null = null;
 
 /**
  * Initializes Firebase services on the first call and returns the memoized instance on subsequent calls.
  * This lazy initialization prevents race conditions during the app's initial module loading.
- * @returns An object containing the Firestore instance (`db`) and a configuration status flag (`isConfigured`).
+ * @returns An object containing the Firestore instance (`db`), Auth instance (`auth`), and a configuration status flag (`isConfigured`).
  */
 export function getFirebase() {
   if (firebaseServices) {
@@ -34,18 +31,17 @@ export function getFirebase() {
 
   if (isProperlyConfigured) {
     try {
-      // Use direct function calls with named imports, the standard for v9+.
-      // Fix: Use functions from the imported namespace.
-      const app = firebase.getApps().length === 0 ? firebase.initializeApp(firebaseConfig) : firebase.getApp();
+      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
       const db = getFirestore(app);
-      firebaseServices = { app, db, isConfigured: true };
+      const auth = getAuth(app);
+      firebaseServices = { app, db, auth, isConfigured: true };
     } catch (error) {
       console.error("Firebase initialization failed. Please check your config in firebase.ts.", error);
-      firebaseServices = { app: null, db: null, isConfigured: false };
+      firebaseServices = { app: null, db: null, auth: null, isConfigured: false };
     }
   } else {
     console.warn("Firebase is not configured. The app will run in a temporary, non-persistent mode. Please update firebase.ts.");
-    firebaseServices = { app: null, db: null, isConfigured: false };
+    firebaseServices = { app: null, db: null, auth: null, isConfigured: false };
   }
   
   return firebaseServices;

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import TournamentDashboard from './pages/TournamentDashboard';
@@ -21,7 +22,7 @@ const ProtectedRoutes = () => (
 
 
 function App() {
-  const { loginId, isLoading } = useAppContext();
+  const { user, isLoading } = useAppContext();
 
   if (isLoading) {
     return (
@@ -38,7 +39,7 @@ function App() {
         <Route path="/public/:scorebookId/match/:matchId/overlay" element={<ScoreboardOverlay />} />
         
         {/* All other routes are handled here, checking for a valid loginId */}
-        <Route path="/*" element={loginId ? <ProtectedRoutes /> : <LoginPage />} />
+        <Route path="/*" element={user ? <ProtectedRoutes /> : <LoginPage />} />
       </Routes>
     </HashRouter>
   );

@@ -1,6 +1,6 @@
 
 import { getFirebase } from '../firebase';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { Tournament, Team, Match } from '../types';
 
 export interface AppData {
@@ -56,6 +56,14 @@ const firestoreService = {
       console.error("Error saving data to Firestore:", error);
       throw error;
     }
+  },
+  
+  doesDocExist: async (loginId: string): Promise<boolean> => {
+      const { db, isConfigured } = getFirebase();
+      if (!isConfigured || !db) return false;
+      const docRef = doc(db, COLLECTION_NAME, loginId);
+      const docSnap = await getDoc(docRef);
+      return docSnap.exists();
   },
 };
 

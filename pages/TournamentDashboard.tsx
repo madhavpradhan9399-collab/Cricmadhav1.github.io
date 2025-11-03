@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../contexts/AppContext';
@@ -6,7 +7,7 @@ import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 
 const TournamentDashboard: React.FC = () => {
-  const { tournaments, createTournament, deleteTournament, loginId, logout } = useAppContext();
+  const { tournaments, createTournament, deleteTournament, user, signOut } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTournament, setNewTournament] = useState<Omit<Tournament, 'id' | 'teams' | 'matches' | 'createdAt'>>({
     name: '',
@@ -33,15 +34,15 @@ const TournamentDashboard: React.FC = () => {
     <Layout title="Tournament Dashboard">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
         <div className="bg-secondary p-2 rounded-lg">
-            <span className="text-sm text-text-secondary mr-2">Scorebook ID:</span>
-            <span className="font-mono bg-accent px-2 py-1 rounded-md text-highlight text-sm">{loginId}</span>
+            <span className="text-sm text-text-secondary mr-2">Logged in as:</span>
+            <span className="font-mono bg-accent px-2 py-1 rounded-md text-highlight text-sm truncate">{user?.email}</span>
         </div>
         <div className="flex gap-2 justify-end">
             <button
-              onClick={logout}
+              onClick={signOut}
               className="bg-accent text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-600 transition-all shadow-lg"
             >
-              Switch Scorebook
+              Sign Out
             </button>
             <button
               onClick={() => setIsModalOpen(true)}

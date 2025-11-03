@@ -1,16 +1,20 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Tournament, Team, Player, Match, BallEvent, Innings, Ball, BatsmanStats, BowlerStats } from '../types';
 import db, { AppData } from '../services/db';
 import { getFirebase } from '../firebase';
+import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut } from 'firebase/auth';
 
 interface AppContextType {
+  user: User | null;
   loginId: string | null;
   isLoading: boolean;
   isFirebaseConfigured: boolean;
   initializationError: string | null;
-  login: (id: string) => void;
-  logout: () => void;
-  createAndLogin: () => Promise<void>;
+  signUp: (email: string, pass: string) => Promise<void>;
+  signIn: (email: string, pass: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
   tournaments: Tournament[];
   teams: Team[];
   matches: Match[];
@@ -34,29 +38,39 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'scorebookLoginId';
-
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loginId, setLoginId] = useState<string | null>(null);
   const [appData, setAppData] = useState<AppData | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [initializationError, setInitializationError] = useState<string | null>(null);
-  const isFirebaseConfigured = getFirebase().isConfigured;
+  const { isConfigured, auth } = getFirebase();
 
   useEffect(() => {
-    const storedId = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedId) {
-      setLoginId(storedId);
+    if (!auth) {
+      setIsLoadingAuth(false);
+      return;
     }
-    setIsInitializing(false);
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoginId(currentUser ? currentUser.uid : null);
+      setIsLoadingAuth(false);
+    });
+    return () => unsubscribe();
+  }, [auth]);
+
+  const signOut = useCallback(async () => {
+    if (!auth) throw new Error("Auth not configured");
+    await firebaseSignOut(auth);
+  }, [auth]);
 
   useEffect(() => {
-    if (!loginId || isInitializing) {
+    if (!loginId) {
+      setAppData(null);
       return;
     }
 
-    setAppData(null); // Clear any stale data
+    setAppData(null); 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     try {
@@ -65,21 +79,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
             if (error) {
                 setInitializationError(`Error loading scorebook: ${error}. Check your Firestore security rules.`);
-                logout(); // Log out to show the login page with the error
+                signOut(); 
             } else {
                 setAppData(data);
                 setInitializationError(null);
             }
         });
         
-        // Set a timeout to prevent infinite loading screen
         timeoutId = setTimeout(() => {
             unsubscribe();
-            setInitializationError(
-                "Loading timed out. This could be due to incorrect Firestore security rules or a network issue. Please check your setup and try again."
-            );
-            logout(); // Log out to show the login page with the error
-        }, 10000); // 10-second timeout
+            setInitializationError("Loading timed out. This could be due to incorrect Firestore security rules or a network issue.");
+            signOut(); 
+        }, 10000);
 
         return () => {
             if (timeoutId) clearTimeout(timeoutId);
@@ -88,43 +99,41 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     } catch (e) {
         setInitializationError("A critical error occurred during initialization. Please check the console.");
-        logout();
+        signOut();
     }
 
-  }, [loginId, isInitializing]);
+  }, [loginId, signOut]);
 
-  const login = useCallback((id: string) => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, id);
-    setInitializationError(null); // Clear previous errors on new login attempt
-    setLoginId(id);
-  }, []);
+  const signUp = useCallback(async (email, password) => {
+    if (!auth) throw new Error("Auth not configured");
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
+    const initialState: AppData = { tournaments: [], teams: [], matches: [] };
+    await db.saveAppData(uid, initialState);
+  }, [auth]);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-    setLoginId(null);
-    setAppData(null);
-  }, []);
+  const signIn = useCallback(async (email, password) => {
+    if (!auth) throw new Error("Auth not configured");
+    await signInWithEmailAndPassword(auth, email, password);
+  }, [auth]);
+
+  const signInWithGoogle = useCallback(async () => {
+    if (!auth) throw new Error("Auth not configured");
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const gUser = result.user;
+
+    const docExists = await db.doesDocExist(gUser.uid);
+    if (!docExists) {
+        const initialState: AppData = { tournaments: [], teams: [], matches: [] };
+        await db.saveAppData(gUser.uid, initialState);
+    }
+  }, [auth]);
 
   const saveData = useCallback(async (newData: AppData) => {
     if (!loginId) return;
     await db.saveAppData(loginId, newData);
   }, [loginId]);
-
-  const createAndLogin = useCallback(async () => {
-    try {
-        const newId = `sb_${Date.now()}`;
-        const initialState: AppData = { tournaments: [], teams: [], matches: [] };
-        await db.saveAppData(newId, initialState);
-        login(newId);
-    } catch (error) {
-        console.error("Failed to create new scorebook:", error);
-        alert(
-            "Could not create a new scorebook.\n\n" +
-            "This is most likely due to your Firestore Security Rules denying write access. " +
-            "Please ensure your rules are configured correctly in the Firebase console."
-        );
-    }
-  }, [login]);
 
   const createTournament = useCallback(async (tournamentData: Omit<Tournament, 'id' | 'teams' | 'matches' | 'createdAt'>) => {
     if (!appData) return;
@@ -476,11 +485,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   }, [modifyMatch]);
 
-  const isLoading = isInitializing || (!!loginId && appData === null && !initializationError);
+  const isLoading = isLoadingAuth || (!!user && appData === null && !initializationError);
   const tournaments = appData?.tournaments ?? [];
   const teams = appData?.teams ?? [];
   const matches = appData?.matches ?? [];
-  const value = { loginId, isLoading, isFirebaseConfigured, initializationError, login, logout, createAndLogin, tournaments, teams, matches, createTournament, deleteTournament, getTournament, createTeam, updateTeam, getTeam, addPlayerToTeam, createMatch, getMatch, updateScore, undoLastBall, updateMatchPlayers, startMatch, endMatch, changeInnings, updatePlayerStats };
+  const value = { user, loginId, isLoading, isFirebaseConfigured: isConfigured, initializationError, signUp, signIn, signInWithGoogle, signOut, tournaments, teams, matches, createTournament, deleteTournament, getTournament, createTeam, updateTeam, getTeam, addPlayerToTeam, createMatch, getMatch, updateScore, undoLastBall, updateMatchPlayers, startMatch, endMatch, changeInnings, updatePlayerStats };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
